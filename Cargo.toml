@@ -1,0 +1,29 @@
+[package]
+name = "aws-sg-ip-sync"
+version = "0.2.0"
+edition = "2021"
+license = "MIT"
+description = "Syncs an AWS security group rule IP with your current IP"
+authors = ["Rafael Bahiense Brasão"]
+
+
+[dependencies]
+reqwest = "0.11"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8.8"
+serde_derive = "1.0"
+tokio = { version = "1", features = ["full"] }
+users = "0.11"
+aws-sdk-ec2 = "1.13.0"
+aws-config = "1.1.1"
+
+[package.metadata.deb]
+maintainer = "Rafael Bahiense Brasão <rafaelbahiense@id.uff.br>"
+copyright = "2024, Rafael Bahiense Brasão <rafaelbahiense@id.uff.br>"
+extended-description = """\
+    A a Rust application designed to automatically update AWS Security Group ingress rules based on the public IP of the machine it's running on.
+    This is especially useful in environments where the IP address changes frequently, ensuring consistent access to AWS resources.
+"""
+depends = "$auto"
+section = "utility"
+priority = "optional"

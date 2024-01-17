@@ -1,0 +1,48 @@
+name: Release a deb package
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+          profile: minimal
+          toolchain: stable
+          components: rustfmt, clippy
+          target: x86_64-unknown-linux-gnu
+
+    - name: Install cargo-deb
+      run: cargo install cargo-deb
+
+    - name: Configure env variables
+      run: | 
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "TARGET=x86_64-unknown-linux-gnu" >> $GITHUB_ENV
+
+    - name: Run sccache-cache
+      uses: mozilla-actions/sccache-action@v0.0.3
+
+    - name: Create deb package
+      run: cargo deb --target=${{ env.TARGET }}
+
+    - name: Set env
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+    - name: Upload deb package
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ./target/${{ env.TARGET }}/debian/aws-sg-ip-sync_${{ env.VERSION }}-1_amd64.deb
