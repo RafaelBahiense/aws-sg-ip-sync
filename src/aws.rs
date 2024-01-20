@@ -16,8 +16,6 @@ pub async fn update_aws_sg_inbound_rules(config: &Config, current_ipv4: &str) {
 
     let client = Client::new(&shared_config);
 
-    println!("Security Group Rule ID: {}", config.aws_sg_rule_id);
-
     let request = client
         .describe_security_group_rules()
         .filters(
@@ -60,8 +58,6 @@ pub async fn update_aws_sg_inbound_rules(config: &Config, current_ipv4: &str) {
                     return;
                 }
 
-                println!("New CIDR IPv4: {new_cidr_ipv4}");
-
                 let response = client
                     .modify_security_group_rules()
                     .group_id(group_id)
@@ -72,7 +68,7 @@ pub async fn update_aws_sg_inbound_rules(config: &Config, current_ipv4: &str) {
                                 aws_sdk_ec2::types::SecurityGroupRuleRequest::builder()
                                     .description(rule.description.unwrap_or_default())
                                     .cidr_ipv6(rule.cidr_ipv6.unwrap_or_default())
-                                    .cidr_ipv4(new_cidr_ipv4)
+                                    .cidr_ipv4(new_cidr_ipv4.clone())
                                     .from_port(rule.from_port.unwrap_or_default())
                                     .to_port(rule.to_port.unwrap_or_default())
                                     .ip_protocol(rule.ip_protocol.unwrap_or_default())
@@ -85,8 +81,8 @@ pub async fn update_aws_sg_inbound_rules(config: &Config, current_ipv4: &str) {
                     .await;
 
                 match response {
-                    Ok(result) => {
-                        println!("Result: {result:?}");
+                    Ok(_) => {
+                        println!("New CIDR IPv4: {new_cidr_ipv4}");
                     }
                     Err(e) => {
                         eprintln!("Error: {e:?}");
