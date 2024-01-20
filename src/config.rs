@@ -1,9 +1,11 @@
-use crate::error::ErrorCode;
+use crate::error::Codes;
 use serde::{Deserialize, Serialize};
 use std::fs::{self, create_dir_all};
 use std::io::Write;
 use std::path::Path;
 
+//TODO: make a internal struct for aws configs to avoid same prefix
+#[allow(clippy::struct_field_names)]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     pub aws_region: String,
@@ -25,15 +27,13 @@ impl Config {
 
 static USERLAND_CONFIG_PATH: &str = ".config/aws-sg-ip-sync/config.toml";
 
-pub fn load_config(base_path_str: &str) -> Result<Option<Config>, ErrorCode> {
+pub fn load(base_path_str: &str) -> Result<Option<Config>, Codes> {
     let base_path = Path::new(base_path_str);
     let config_path = base_path.join(USERLAND_CONFIG_PATH);
 
     if config_path.exists() {
-        let config_string =
-            fs::read_to_string(&config_path).map_err(|_| ErrorCode::ConfigReadError)?;
-        let parsed_result =
-            toml::from_str(&config_string).map_err(|_| ErrorCode::ConfigParseError)?;
+        let config_string = fs::read_to_string(&config_path).map_err(|_| Codes::ConfigReadError)?;
+        let parsed_result = toml::from_str(&config_string).map_err(|_| Codes::ConfigParseError)?;
 
         Ok(parsed_result)
     } else {

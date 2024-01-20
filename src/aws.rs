@@ -37,25 +37,30 @@ pub async fn update_aws_sg_inbound_rules(config: &Config, current_ipv4: &str) {
 
     match response {
         Ok(result) => {
-            for rule in result.security_group_rules.unwrap() {
-                let security_group_rule_id = rule.security_group_rule_id.unwrap();
-                let cidr_ipv4 = rule.cidr_ipv4.unwrap();
-                let group_id = rule.group_id.unwrap();
+            for rule in result
+                .security_group_rules
+                .expect("No security group rules found")
+            {
+                let security_group_rule_id = rule
+                    .security_group_rule_id
+                    .expect("Error: security_group_rule_id is None");
+                let cidr_ipv4 = rule.cidr_ipv4.expect("Error: cidr_ipv4 is None");
+                let group_id = rule.group_id.expect("Error: group_id is None");
                 let new_cidr_ipv4 = current_ipv4.to_string() + "/32";
 
                 if security_group_rule_id != config.aws_sg_rule_id {
                     continue;
                 }
 
-                println!("Rule ID: {}", security_group_rule_id);
-                println!("CIDR IPv4: {}", cidr_ipv4);
+                println!("Rule ID: {security_group_rule_id}");
+                println!("CIDR IPv4: {cidr_ipv4}");
 
                 if cidr_ipv4 == current_ipv4 {
                     println!("CIDR IPv4 is already up to date.");
                     return;
                 }
 
-                println!("New CIDR IPv4: {}", new_cidr_ipv4);
+                println!("New CIDR IPv4: {new_cidr_ipv4}");
 
                 let response = client
                     .modify_security_group_rules()
@@ -81,14 +86,14 @@ pub async fn update_aws_sg_inbound_rules(config: &Config, current_ipv4: &str) {
 
                 match response {
                     Ok(result) => {
-                        println!("Result: {:?}", result);
+                        println!("Result: {result:?}");
                     }
                     Err(e) => {
-                        eprintln!("Error: {:?}", e);
+                        eprintln!("Error: {e:?}");
                     }
                 }
             }
         }
-        Err(e) => eprintln!("Error: {:?}", e),
+        Err(e) => eprintln!("Error: {e:?}"),
     }
 }

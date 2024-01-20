@@ -1,17 +1,14 @@
 use uzers::os::unix::UserExt;
 use uzers::{get_current_uid, get_user_by_uid};
 
-pub fn get_home_dir_of_current_user() -> Option<String> {
-    if let Some(user) = get_user_by_uid(get_current_uid()) {
+pub fn get_current_home_dir() -> Option<String> {
+    get_user_by_uid(get_current_uid()).and_then(|user| {
         if user.uid() != 0 {
             // Not running as root, so we retrieve the home directory
-            Some(user.home_dir().to_str().unwrap().to_string())
+            user.home_dir().to_str().map(String::from)
         } else {
             // Running as root
             None
         }
-    } else {
-        // No user found
-        None
-    }
+    })
 }

@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub enum ErrorCode {
+pub enum Codes {
     ConfigReadError = 101,
     ConfigParseError = 102,
 }
