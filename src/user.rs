@@ -1,5 +1,5 @@
-use users::os::unix::UserExt;
-use users::{get_current_uid, get_user_by_uid};
+use uzers::os::unix::UserExt;
+use uzers::{get_current_uid, get_user_by_uid};
 
 pub fn get_home_dir_of_current_user() -> Option<String> {
     if let Some(user) = get_user_by_uid(get_current_uid()) {
