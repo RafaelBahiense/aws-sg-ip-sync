@@ -35,6 +35,8 @@ pub async fn update_aws_sg_inbound_rules(config: &Config, current_ipv4: &str) {
 
     match response {
         Ok(result) => {
+            let current_ipv4 = current_ipv4.to_string() + "/32";
+
             for rule in result
                 .security_group_rules
                 .expect("No security group rules found")
@@ -44,12 +46,12 @@ pub async fn update_aws_sg_inbound_rules(config: &Config, current_ipv4: &str) {
                     .expect("Error: security_group_rule_id is None");
                 let cidr_ipv4 = rule.cidr_ipv4.expect("Error: cidr_ipv4 is None");
                 let group_id = rule.group_id.expect("Error: group_id is None");
-                let new_cidr_ipv4 = current_ipv4.to_string() + "/32";
 
                 if security_group_rule_id != config.aws_sg_rule_id {
                     continue;
                 }
 
+                println!("Current IPv4: {current_ipv4}");
                 println!("Rule ID: {security_group_rule_id}");
                 println!("CIDR IPv4: {cidr_ipv4}");
 
@@ -68,7 +70,7 @@ pub async fn update_aws_sg_inbound_rules(config: &Config, current_ipv4: &str) {
                                 aws_sdk_ec2::types::SecurityGroupRuleRequest::builder()
                                     .description(rule.description.unwrap_or_default())
                                     .cidr_ipv6(rule.cidr_ipv6.unwrap_or_default())
-                                    .cidr_ipv4(new_cidr_ipv4.clone())
+                                    .cidr_ipv4(current_ipv4.clone())
                                     .from_port(rule.from_port.unwrap_or_default())
                                     .to_port(rule.to_port.unwrap_or_default())
                                     .ip_protocol(rule.ip_protocol.unwrap_or_default())
@@ -82,7 +84,7 @@ pub async fn update_aws_sg_inbound_rules(config: &Config, current_ipv4: &str) {
 
                 match response {
                     Ok(_) => {
-                        println!("New CIDR IPv4: {new_cidr_ipv4}");
+                        println!("New CIDR IPv4: {current_ipv4}");
                     }
                     Err(e) => {
                         eprintln!("Error: {e:?}");
